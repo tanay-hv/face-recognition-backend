@@ -1,11 +1,13 @@
-from fastapi import APIRouter
-from models.user import UserReq, UserRes
-import uuid
+from fastapi import APIRouter, Depends
+from models.user import UserReq
+from services.userManagementService import UserManagementService
 
 router = APIRouter()
 
 @router.post("/addUser")
-async def addUser(user : UserReq) -> UserRes:
-    userId = str(uuid.uuid4())
-    message = f"{user.name} was added successfully."
-    return UserRes(message=message, userId=userId)
+async def addUser(
+        user : UserReq,
+        userManagementService : UserManagementService = Depends()
+    ):
+    result = await userManagementService.addUser(user)
+    return result

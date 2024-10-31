@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, Depends, File
 from services.faceDetectionService import FaceDetectionService
 from services.featureExtractionService import FeatureExtractionService
+from services.similaritySearchService import SimilaritySearchService
 
 router = APIRouter()
 
@@ -8,7 +9,8 @@ router = APIRouter()
 async def recogniseUser(
     image : UploadFile = File(...),
     faceDetectionService : FaceDetectionService = Depends(),
-    featureExtractionService : FeatureExtractionService = Depends()
+    featureExtractionService : FeatureExtractionService = Depends(),
+    similaritySearchService : SimilaritySearchService = Depends(),
 ):
     imageContent = await image.read()
 
@@ -16,7 +18,13 @@ async def recogniseUser(
 
     vectors = await featureExtractionService.extractFeatures(facePixels=facePixels)
 
-    return  {
-                "confidence" : confidence,
-                "vectors" : vectors
-            }
+    matchResult, cacheKey = await similaritySearchService.findMatch(vectors=vectors)
+
+    if matchResult:
+        return {
+            "match": matchResult,
+        }
+    return {
+        "match": None,
+        "reqId": cacheKey  
+    }
