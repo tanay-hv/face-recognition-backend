@@ -30,5 +30,5 @@ class Database:
                 
                 similarity = 1 - dist_of_ms
                 if similarity >= threshold:
-                    return mostSimilar, similarity
+                    return mostSimilar
             return None

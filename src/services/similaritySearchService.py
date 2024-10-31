@@ -14,7 +14,7 @@ class SimilaritySearchService :
         self.similarityThreshold = 0.70
 
     async def findMatch(self, vectors : np.ndarray) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-        match, similarity = await self.db.findSimilarFaces(
+        match = await self.db.findSimilarFaces(
             vectors=vectors,
             threshold=self.similarityThreshold
         )
@@ -23,7 +23,6 @@ class SimilaritySearchService :
             return {
                 "userId": match.id,
                 "name": match.name,
-                "similarity" : f"{similarity*100}%"
             }, None
 
         cacheKey = str(uuid.uuid4())
