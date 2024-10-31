@@ -20,9 +20,15 @@ class Database:
     async def findSimilarFaces(self, vectors: np.ndarray, threshold: float) -> Optional[User]:
         with self.getSession() as session:
             mostSimilar = session.query(User).order_by(
-                User.faceVectors.cosine_distance(vectors) >= threshold
+                User.faceVectors.cosine_distance(vectors)
             ).first()
 
             if mostSimilar:
-                return mostSimilar
+                dist_of_ms = session.query(
+                    User.faceVectors.cosine_distance(vectors)
+                ).filter(User.id == mostSimilar.id).scalar()
+                
+                similarity = 1 - dist_of_ms
+                if similarity >= threshold:
+                    return mostSimilar, similarity
             return None

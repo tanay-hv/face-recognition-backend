@@ -11,21 +11,19 @@ class SimilaritySearchService :
     def __init__(self):
         self.db = Database(connectionString = config.DB_CONNECTION_STRING)
         self.cache = Cache(host = config.REDIS_HOST, port = config.REDIS_PORT, password=config.REDIS_PASSWORD)
-        self.similarityThreshold = 0.85
+        self.similarityThreshold = 0.70
 
     async def findMatch(self, vectors : np.ndarray) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-        match = await self.db.findSimilarFaces(
+        match, similarity = await self.db.findSimilarFaces(
             vectors=vectors,
             threshold=self.similarityThreshold
         )
 
-        print(f"{match.id} hhhhhhhhhhhhhhhhhhhhhhhh")
-
         if match :
-            print(f"{match.id} hhhhhhhhhhhhhhhhhhhhhhhh")
             return {
                 "userId": match.id,
                 "name": match.name,
+                "similarity" : f"{similarity*100}%"
             }, None
 
         cacheKey = str(uuid.uuid4())
