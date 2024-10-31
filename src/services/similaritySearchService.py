@@ -19,11 +19,14 @@ class SimilaritySearchService :
             threshold=self.similarityThreshold
         )
 
+        print(f"{match.id} hhhhhhhhhhhhhhhhhhhhhhhh")
+
         if match :
+            print(f"{match.id} hhhhhhhhhhhhhhhhhhhhhhhh")
             return {
                 "userId": match.id,
                 "name": match.name,
-            }
+            }, None
 
         cacheKey = str(uuid.uuid4())
         await self.cache.cacheVectors(reqId=cacheKey, vectors=vectors)

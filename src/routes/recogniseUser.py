@@ -22,9 +22,13 @@ async def recogniseUser(
 
     if matchResult:
         return {
-            "match": matchResult,
+            "status": "success",
+            "message": "User recognised",
+            "user": matchResult
         }
-    return {
-        "match": None,
-        "reqId": cacheKey  
-    }
+    else:
+        return {
+            "status": "no_match",
+            "message": "No matching user found.",
+            "reqId": cacheKey
+        }

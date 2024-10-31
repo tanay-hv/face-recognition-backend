@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session
 from database.userSchema import Base, User
 import numpy as np
@@ -20,11 +20,9 @@ class Database:
     async def findSimilarFaces(self, vectors: np.ndarray, threshold: float) -> Optional[User]:
         with self.getSession() as session:
             mostSimilar = session.query(User).order_by(
-                User.faceVectors.cosine_distance(vectors)
+                User.faceVectors.cosine_distance(vectors) >= threshold
             ).first()
 
             if mostSimilar:
-                similarity = 1 - User.faceVectors.cosine_distance(vectors)
-                if similarity >= threshold:
-                    return mostSimilar
+                return mostSimilar
             return None

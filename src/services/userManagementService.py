@@ -20,11 +20,12 @@ class UserManagementService:
             faceVectors=vectors
         )
 
-        await self.db.addUser(newUser)
-
-        await self.cache.deleteCachedVectors(reqId=req.reqId)
+        with self.db.getSession() as session:
+            session.add(newUser)
+            session.commit()
+            session.refresh(newUser)
 
         return UserRes(
-            message = f"{req.name} was added",
-            userId = newUser.id
+            message=f"{req.name} was added",
+            userId=newUser.id
         )
