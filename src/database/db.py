@@ -1,8 +1,9 @@
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from database.userSchema import Base, User
 import numpy as np
-from typing import List, Optional
+from typing import Optional
+from exception.exceptions import ServiceUnavailable
 
 class Database:
     def __init__(self, connectionString):
@@ -18,17 +19,21 @@ class Database:
             session.commit()
 
     async def findSimilarFaces(self, vectors: np.ndarray, threshold: float) -> Optional[User]:
-        with self.getSession() as session:
-            mostSimilar = session.query(User).order_by(
-                User.faceVectors.cosine_distance(vectors)
-            ).first()
 
-            if mostSimilar:
-                dist_of_ms = session.query(
+        try:
+            with self.getSession() as session:
+                mostSimilar = session.query(User).order_by(
                     User.faceVectors.cosine_distance(vectors)
-                ).filter(User.id == mostSimilar.id).scalar()
-                
-                similarity = 1 - dist_of_ms
-                if similarity >= threshold:
-                    return mostSimilar
-            return None
+                ).first()
+        except Exception as e:
+            raise ServiceUnavailable(message="Database connection failed") from e
+
+        if mostSimilar:
+            dist_of_ms = session.query(
+                User.faceVectors.cosine_distance(vectors)
+            ).filter(User.id == mostSimilar.id).scalar()
+            
+            similarity = 1 - dist_of_ms
+            if similarity >= threshold:
+                return mostSimilar
+        return None

@@ -4,6 +4,8 @@ from PIL import Image
 from typing import Tuple, Optional
 import io
 
+from exception.exceptions import FaceNotDetected, LowSimilarityScore
+
 class FaceDetectionService:
     def __init__(self):
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -25,7 +27,10 @@ class FaceDetectionService:
 
         faceTensor, prob = self.detector(image, return_prob=True)
         
-        if faceTensor is None or prob < self.threshold:
-            return None
+        if faceTensor is None:
+            raise FaceNotDetected
+        
+        if prob < self.threshold:
+            raise LowSimilarityScore
         
         return faceTensor, prob

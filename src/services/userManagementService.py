@@ -4,6 +4,7 @@ from models.user import UserReq, UserRes
 import uuid
 from database.userSchema import User
 import config
+from exception.exceptions import BadRequest, InternalServer
 
 class UserManagementService:
     def __init__(self):
@@ -13,17 +14,23 @@ class UserManagementService:
     async def addUser(self, req : UserReq) -> UserRes:
         vectors = await self.cache.getCachedVectors(req.reqId)
 
-        newUser = User(
-            id=str(uuid.uuid4()),
-            name=req.name,
-            birthdate=req.birthdate,
-            faceVectors=vectors
-        )
+        if not vectors:
+            raise BadRequest(message="Face vectors not found in cache")
+        
+        try :
+            newUser = User(
+                id=str(uuid.uuid4()),
+                name=req.name,
+                birthdate=req.birthdate,
+                faceVectors=vectors
+            )
 
-        with self.db.getSession() as session:
-            session.add(newUser)
-            session.commit()
-            session.refresh(newUser)
+            with self.db.getSession() as session:
+                session.add(newUser)
+                session.commit()
+                session.refresh(newUser)
+        except Exception as e:
+            raise InternalServer(message="Failed to add user") from e
 
         return UserRes(
             message=f"{req.name} was added",
