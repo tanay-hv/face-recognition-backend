@@ -13,4 +13,4 @@ class User(Base):
     id = mapped_column(String, primary_key=True, unique=True)
     name = mapped_column(String)
     birthdate = mapped_column(Date)
-    faceVectors = mapped_column(Vector(1536))
+    faceVectors = mapped_column(Vector(512))

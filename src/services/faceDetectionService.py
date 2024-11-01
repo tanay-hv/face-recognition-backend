@@ -1,40 +1,31 @@
-from mtcnn.mtcnn import MTCNN
-import numpy as np
+import torch
+from facenet_pytorch import MTCNN
 from PIL import Image
-from typing import Dict, List
+from typing import Tuple, Optional
 import io
 
 class FaceDetectionService:
     def __init__(self):
-        self.detector = MTCNN(device="CPU:0")
-        self.confidenceThreshold = 0.95
-    
-    def extractFace(self, pixels : np.ndarray, box : Dict) -> np.ndarray:
-        x1, y1, width, height = box
-        x2, y2 = x1 + width, y1 + height
-        face = pixels[y1:y2, x1:x2]
-        return face
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.detector = MTCNN(
+            image_size=160,
+            margin=0,
+            min_face_size=20,
+            thresholds=[0.6, 0.7, 0.7],
+            factor=0.709,
+            post_process=True,
+            device=self.device
+        )
+        self.threshold = 0.95
 
-    async def detectFace(self, image : bytes) -> List[Dict[str, any]]:
+    async def detectFace(self, image : bytes) -> Optional[Tuple[torch.Tensor, float]]:
         image = Image.open(io.BytesIO(image))
-
         if image.mode != 'RGB':
             image = image.convert('RGB')
 
-        pixels = np.asarray(image)
-
-        faces = self.detector.detect_faces(pixels)
-
-        confidentFaces = [
-            face for face in faces
-            if face['confidence'] >= self.confidenceThreshold
-        ]
-
-        if not confidentFaces:
+        faceTensor, prob = self.detector(image, return_prob=True)
+        
+        if faceTensor is None or prob < self.threshold:
             return None
         
-        face = confidentFaces[0]
-
-        facePixels = self.extractFace(pixels=pixels, box=face['box'])
-
-        return facePixels, face['confidence']
+        return faceTensor, prob

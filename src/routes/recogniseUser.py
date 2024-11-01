@@ -14,9 +14,9 @@ async def recogniseUser(
 ):
     imageContent = await image.read()
 
-    facePixels, confidence = await faceDetectionService.detectFace(imageContent)
+    faceTensors, probability = await faceDetectionService.detectFace(imageContent)
 
-    vectors = await featureExtractionService.extractFeatures(facePixels=facePixels)
+    vectors = await featureExtractionService.extractFeatures(faceTensors=faceTensors)
 
     matchResult, cacheKey = await similaritySearchService.findMatch(vectors=vectors)
 
