@@ -10,4 +10,4 @@ async def addUser(
         userManagementService : UserManagementService = Depends()
     ):
     result = await userManagementService.addUser(user)
-    return result
+    return result   

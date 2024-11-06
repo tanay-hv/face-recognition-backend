@@ -13,9 +13,6 @@ class UserManagementService:
 
     async def addUser(self, req : UserReq) -> UserRes:
         vectors = await self.cache.getCachedVectors(req.reqId)
-
-        if not vectors:
-            raise BadRequest(message="Face vectors not found in cache")
         
         try :
             newUser = User(
