@@ -6,26 +6,25 @@ import uuid
 import config
 from exception.exceptions import ServiceUnavailable
 
-class SimilaritySearchService :
+class SimilaritySearchService:
     def __init__(self):
-        self.db = Database(connectionString = config.DB_CONNECTION_STRING)
-        self.cache = Cache(host = config.REDIS_HOST, port = config.REDIS_PORT, password=config.REDIS_PASSWORD)
-        self.similarityThreshold = 0.70
+        self.db = Database(connectionString=config.DB_CONNECTION_STRING)
+        self.cache = Cache(host=config.REDIS_HOST, port=config.REDIS_PORT, password=config.REDIS_PASSWORD)
+        self.similarity_threshold = 0.70
 
-    async def findMatch(self, vectors : np.ndarray) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    async def findMatch(self, vectors: np.ndarray) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+
         try:
             match = await self.db.findSimilarFaces(
                 vectors=vectors,
-                threshold=self.similarityThreshold
+                threshold=self.similarity_threshold
             )
+
         except Exception as e:
             raise ServiceUnavailable(message="Database unavailable") from e
         
-        if match :
-            return {
-                "userId": match.id,
-                "name": match.name,
-            }, None
+        if match:
+            return match, None
 
         cacheKey = str(uuid.uuid4())
         await self.cache.cacheVectors(reqId=cacheKey, vectors=vectors)
