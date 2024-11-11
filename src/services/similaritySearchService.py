@@ -9,15 +9,15 @@ from exception.exceptions import ServiceUnavailable
 class SimilaritySearchService:
     def __init__(self):
         self.db = Database(connectionString=config.DB_CONNECTION_STRING)
-        self.cache = Cache(host=config.REDIS_HOST, port=config.REDIS_PORT, password=config.REDIS_PASSWORD)
-        self.similarity_threshold = 0.70
+        self.cache = Cache(host=config.REDIS_HOST, port=config.REDIS_PORT)
+        self.similarityThreshold = 0.70
 
     async def findMatch(self, vectors: np.ndarray) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
 
         try:
             match = await self.db.findSimilarFaces(
                 vectors=vectors,
-                threshold=self.similarity_threshold
+                threshold=self.similarityThreshold
             )
 
         except Exception as e:

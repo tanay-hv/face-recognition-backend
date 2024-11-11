@@ -4,8 +4,8 @@ from redis import Redis
 import json
 
 class Cache:
-    def __init__(self, host, port, password):
-        self.redis = Redis(host=host, port=port, password=password)
+    def __init__(self, host, port):
+        self.redis = Redis(host=host, port=port)
         self.expiry = 900
 
     async def cacheVectors(self, reqId : str, vectors : np.ndarray):

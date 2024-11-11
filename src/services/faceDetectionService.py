@@ -3,7 +3,7 @@ from facenet_pytorch import MTCNN
 from PIL import Image
 from typing import Tuple, Optional
 import io
-
+import asyncio
 from exception.exceptions import FaceNotDetected, LowSimilarityScore
 
 class FaceDetectionService:
@@ -19,11 +19,29 @@ class FaceDetectionService:
             device=self.device
         )
         self.threshold = 0.95
+        self.maxImageSize = 1024
 
-    async def detectFace(self, image : bytes) -> Optional[Tuple[torch.Tensor, float]]:
-        image = Image.open(io.BytesIO(image))
+    def optimiseImageSync(self, imageBytes : bytes) -> Image.Image :
+        image = Image.open(io.BytesIO(imageBytes))
+
+        if max(image.size) > self.maxImageSize:
+            ratio = self.maxImageSize / max(image.size)
+            newSize = tuple(int(dim * ratio) for dim in image.size)
+            image = image.resize(newSize, Image.LANCZOS)
+
         if image.mode != 'RGB':
             image = image.convert('RGB')
+            
+        return image
+
+    async def optimiseImage(self, image : bytes) -> Image.Image :
+        loop = asyncio.get_event_loop()
+        image = await loop.run_in_executor(None, self.optimiseImageSync, image)
+        return image
+        
+
+    async def detectFace(self, imageBytes : bytes) -> Optional[Tuple[torch.Tensor, float]]:
+        image = await self.optimiseImage(image=imageBytes)
 
         faceTensor, prob = self.detector(image, return_prob=True)
         

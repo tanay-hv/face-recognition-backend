@@ -8,7 +8,7 @@ from exception.exceptions import BadRequest, InternalServer
 class UserManagementService:
     def __init__(self):
         self.db = Database(connectionString=config.DB_CONNECTION_STRING)
-        self.cache = Cache(host=config.REDIS_HOST, port=config.REDIS_PORT, password=config.REDIS_PASSWORD)
+        self.cache = Cache(host=config.REDIS_HOST, port=config.REDIS_PORT)
 
     async def addUser(self, req: UserReq) -> UserRes:
 
