@@ -28,14 +28,10 @@ class ServiceUnavailable(BaseException):
     def __init__(self, message: str = "Service unavailable"):
         super().__init__(statusCode=503, errorCode=503, message=message) 
 
-class ServiceUnavailable(BaseException):
-    def __init__(self, message: str = "Service unavailable"):
-        super().__init__(statusCode=503, errorCode=503, message=message) 
-
 class FaceNotDetected(BaseException):
     def __init__(self, message: str = "No face was detected"):
-        super().__init__(statusCode=400, errorCode=601, message=message) 
+        super().__init__(statusCode=400, errorCode=400, message=message) 
 
 class LowSimilarityScore(BaseException):
     def __init__(self, message: str = "Similarity score is below threshold"):
-        super().__init__(statusCode=400, errorCode=602, message=message) 
+        super().__init__(statusCode=400, errorCode=400, message=message) 
