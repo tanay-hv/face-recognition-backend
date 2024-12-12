@@ -5,3 +5,4 @@ test_images
 .vscode
 lfw-deepfunneled-faces
 test-data
+.pytest_cache
