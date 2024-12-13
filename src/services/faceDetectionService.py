@@ -42,7 +42,7 @@ class FaceDetectionService:
     async def detectFace(self, imageBytes : bytes) -> Optional[Tuple[torch.Tensor, float]]:
         image = await self.optimiseImage(image=imageBytes)
 
-        faceTensor, prob = await self.detector(image, return_prob=True)
+        faceTensor, prob = self.detector(image, return_prob=True)
         
         if faceTensor is None:
             raise FaceNotDetected
