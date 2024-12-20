@@ -4,7 +4,7 @@ from PIL import Image
 from typing import Tuple, Optional
 import io
 import asyncio
-from exception.exceptions import FaceNotDetected, LowSimilarityScore
+from exception.exceptions import FaceNotDetected, LowSimilarityScore, InternalServer
 
 class FaceDetectionService:
     def __init__(self):
@@ -40,9 +40,14 @@ class FaceDetectionService:
         return image
         
     async def detectFace(self, imageBytes : bytes) -> Optional[Tuple[torch.Tensor, float]]:
+
         image = await self.optimiseImage(image=imageBytes)
 
-        faceTensor, prob = self.detector(image, return_prob=True)
+        try :
+            faceTensor, prob = self.detector(image, return_prob=True)
+
+        except Exception as e :
+            raise InternalServer(f"Something went wrong, try again later")
         
         if faceTensor is None:
             raise FaceNotDetected

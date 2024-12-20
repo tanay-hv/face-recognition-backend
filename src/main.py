@@ -23,7 +23,7 @@ async def generalHandler(req : Request, err : Exception):
             content={
                 "status" : "error",
                 "errorCode" : 500,
-                "message" : "Something went wrong, please try again later"
+                "message" : str(err)
             }
         )
     )

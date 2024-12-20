@@ -11,6 +11,14 @@ CREATE TABLE IF NOT EXISTS "user" (
 );
 """
 
+CREATE_CACHE_TABLE = """
+CREATE TABLE IF NOT EXISTS "vectors_cache" (
+    timestamp timestamp NOT NULL DEFAULT NOW(),
+    key VARCHAR PRIMARY KEY,
+    face_vectors vector(512) NOT NULL
+);
+"""
+
 CREATE_VECTOR_INDEX = """
 CREATE INDEX IF NOT EXISTS user_face_vectors_idx 
 ON "user" USING hnsw (face_vectors vector_cosine_ops);
@@ -28,3 +36,23 @@ FROM "user"
 ORDER BY face_vectors <=> %s
 LIMIT 1;
 """
+
+CACHE_VECTORS = """
+INSERT INTO vectors_cache (key, face_vectors, timestamp)
+VALUES (%s, %s, NOW())
+RETURNING key;
+"""
+
+GET_CACHED_VECTORS = """
+SELECT face_vectors 
+FROM vectors_cache 
+WHERE key = %s 
+"""
+
+DELETE_CACHED_VECTORS = """
+DELETE FROM 
+vectors_cache 
+WHERE key = %s;
+"""
+
+"AND timestamp > NOW() - INTERVAL '10 minutes';"

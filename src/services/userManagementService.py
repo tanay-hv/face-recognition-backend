@@ -1,5 +1,4 @@
 from database.db import Database
-from database.cache import Cache
 from models.user import UserReq, UserRes
 import uuid
 import config
@@ -8,11 +7,10 @@ from exception.exceptions import BadRequest, InternalServer
 class UserManagementService:
     def __init__(self):
         self.db = Database(connectionString=config.DB_CONNECTION_STRING)
-        self.cache = Cache(host=config.REDIS_HOST, port=config.REDIS_PORT)
 
     async def addUser(self, req: UserReq) -> UserRes:
 
-        vectors = await self.cache.getCachedVectors(req.reqId)
+        vectors = await self.db.getCachedVectors(key=req.reqId)
         
         try:
             userId = str(uuid.uuid4())
@@ -24,7 +22,7 @@ class UserManagementService:
                 faceVectors=vectors
             )
             
-            await self.cache.deleteCachedVectors(req.reqId)
+            await self.db.deleteCachedVectors(key=req.reqId)
             
             return UserRes(
                 message=f"{req.name} was added",
@@ -32,4 +30,4 @@ class UserManagementService:
             )
         
         except Exception as e:
-            raise InternalServer(message="Failed to add user") from e
+            raise InternalServer(message=f"Failed to add user") from e
