@@ -7,7 +7,6 @@ A facial recognition system that can detect faces, extract features, and match f
 - Face detection using MTCNN (Multi-Task Cascaded Convolutional Networks).
 - Feature extraction using InceptionResnetV1 pre-trained on VGGFace2.
 - Similarity search using cosine distance.
-- Redis caching for better user experience.
 - PostgreSQL with pgvector for similarity search.
 - REST API endpoints for user recognition and addition.
 - Docker support.
@@ -16,7 +15,6 @@ A facial recognition system that can detect faces, extract features, and match f
 
 - Python 3.9 or higher
 - PostgreSQL with pgvector extension
-- Redis server
 - CUDA-capable GPU (optional, for good performance)
 
 ## Installation
@@ -35,9 +33,6 @@ pip install -r requirements.txt
 3. Set up environment variables (config.py):
 ```bash
 export DB_CONNECTION_STRING="postgresql://user:password@localhost:5432/dbname"
-export REDIS_HOST="localhost"
-export REDIS_PORT="6379"
-export REDIS_PASSWORD="your-redis-password"
 ```
 
 ## Running with Docker
@@ -51,9 +46,6 @@ docker build -t face-recognition-system .
 ```bash
 docker run -p 8000:8000 \
   -e DB_CONNECTION_STRING="postgresql://user:password@db:5432/dbname" \
-  -e REDIS_HOST="redis" \
-  -e REDIS_PORT="6379" \
-  -e REDIS_PASSWORD="your-redis-password" \
   face-recognition-system
 ```
 
@@ -122,7 +114,6 @@ face-recognition-system/
 │   │   └── user.py
 │   ├── database/
 │   │   ├── db.py
-│   │   ├── cache.py
 │   │   └── userSchema.py
 │   └── exception/
 │       └── exceptions.py
@@ -138,8 +129,8 @@ face-recognition-system/
 - 409: Duplicate Entry
 - 500: Internal Server Error
 - 503: Service Unavailable
-- 601: Face Not Detected
-- 602: Low Similarity Score
+- 400: Face Not Detected
+- 400: Low Similarity Score
 
 ## Development
 
