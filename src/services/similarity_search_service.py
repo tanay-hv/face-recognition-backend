@@ -7,14 +7,14 @@ from exception.exceptions import ServiceUnavailable
 
 class SimilaritySearchService:
     def __init__(self):
-        self.db = Database(connectionString=config.DB_CONNECTION_STRING)
-        self.similarityThreshold = 0.70
+        self.db = Database(connection_string=config.DB_CONNECTION_STRING)
+        self.similarity_threshold = 0.70
 
-    async def findMatch(self, vectors: np.ndarray) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    async def find_match(self, vectors: np.ndarray) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         try:
-            match = await self.db.findSimilarFaces(
+            match = await self.db.find_similar_faces(
                 vectors=vectors,
-                threshold=self.similarityThreshold
+                threshold=self.similarity_threshold
             )
 
         except Exception as e:
@@ -23,6 +23,6 @@ class SimilaritySearchService:
         if match:
             return match, None
         
-        cacheKey = str(uuid.uuid4())
-        await self.db.cacheVectors(vectors=vectors, key=cacheKey)
-        return None, cacheKey
+        cache_key = str(uuid.uuid4())
+        await self.db.cache_vectors(vectors=vectors, key=cache_key)
+        return None, cache_key

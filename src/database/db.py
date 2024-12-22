@@ -7,14 +7,14 @@ from contextlib import contextmanager
 from exception.exceptions import ServiceUnavailable
 
 class Database:
-    def __init__(self, connectionString: str):
-        self.connectionString = connectionString
-        self.initDb()
+    def __init__(self, connection_string: str):
+        self.connection_string = connection_string
+        self.init_db()
 
     @contextmanager
-    def getConnection(self):
+    def get_connection(self):
         try:
-            conn = psycopg2.connect(self.connectionString)
+            conn = psycopg2.connect(self.connection_string)
             register_vector(conn) 
             yield conn
         except Exception as e:
@@ -23,7 +23,7 @@ class Database:
             if 'conn' in locals():
                 conn.close()
 
-    def initDb(self):
+    def init_db(self):
         from database.queries import (
             ENABLE_VECTOR_EXTENSION,
             CREATE_USER_TABLE,
@@ -31,7 +31,7 @@ class Database:
             CREATE_CACHE_TABLE
         )
         
-        with self.getConnection() as conn:
+        with self.get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(ENABLE_VECTOR_EXTENSION)
                 cur.execute(CREATE_USER_TABLE)
@@ -39,17 +39,17 @@ class Database:
                 cur.execute(CREATE_CACHE_TABLE)
             conn.commit()
 
-    async def addUser(self, userId: str, name: str, birthdate: str, faceVectors: np.ndarray) -> Dict[str, Any]:
+    async def add_user(self, user_id: str, name: str, birthdate: str, face_vectors: np.ndarray) -> Dict[str, Any]:
         from database.queries import INSERT_USER
         
         try:
-            with self.getConnection() as conn:
+            with self.get_connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute(INSERT_USER, (
-                        userId,
+                        user_id,
                         name,
                         birthdate,
-                        faceVectors 
+                        face_vectors 
                     ))
                     result = cur.fetchone()
                 conn.commit()
@@ -57,11 +57,11 @@ class Database:
         except Exception as e:
             raise ServiceUnavailable(message="Failed to add user") from e
 
-    async def findSimilarFaces(self, vectors: np.ndarray, threshold: float) -> Optional[Dict[str, Any]]:
+    async def find_similar_faces(self, vectors: np.ndarray, threshold: float) -> Optional[Dict[str, Any]]:
         from database.queries import FIND_SIMILAR_FACE
         
         try:
-            with self.getConnection() as conn:
+            with self.get_connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute(FIND_SIMILAR_FACE, (vectors, vectors))
                     result = cur.fetchone()
@@ -75,10 +75,10 @@ class Database:
         except Exception as e:
             raise ServiceUnavailable(message="Failed to search for similar faces") from e
         
-    async def cacheVectors(self, vectors: np.ndarray, key: str) -> Optional[str]:
+    async def cache_vectors(self, vectors: np.ndarray, key: str) -> Optional[str]:
         from database.queries import CACHE_VECTORS
         try : 
-            with self.getConnection() as conn:
+            with self.get_connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute(CACHE_VECTORS, (
                         key,
@@ -91,10 +91,10 @@ class Database:
         except Exception as e:
             raise ServiceUnavailable(message="Failed to add vectors to the cache") from e
         
-    async def getCachedVectors(self, key : str) -> Optional[np.ndarray] : 
+    async def get_cached_vectors(self, key: str) -> Optional[np.ndarray]: 
         from database.queries import GET_CACHED_VECTORS
         try:
-            with self.getConnection() as conn:
+            with self.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(GET_CACHED_VECTORS, [key])
                     result = cur.fetchone()
@@ -102,10 +102,10 @@ class Database:
         except Exception as e:
             raise ServiceUnavailable(message=f"Failed to retrieve cached vectors") from e
         
-    async def deleteCachedVectors(self, key: str) -> None:
+    async def delete_cached_vectors(self, key: str) -> None:
         from database.queries import DELETE_CACHED_VECTORS
         try:
-            with self.getConnection() as conn:
+            with self.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(DELETE_CACHED_VECTORS, [key])
                 conn.commit()

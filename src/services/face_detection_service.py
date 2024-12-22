@@ -19,40 +19,39 @@ class FaceDetectionService:
             device=self.device
         )
         self.threshold = 0.95
-        self.maxImageSize = 1024
+        self.max_image_size = 1024
 
-    def optimiseImageSync(self, imageBytes : bytes) -> Image.Image :
-        image = Image.open(io.BytesIO(imageBytes))
+    def optimise_image_sync(self, image_bytes: bytes) -> Image.Image:
+        image = Image.open(io.BytesIO(image_bytes))
 
-        if max(image.size) > self.maxImageSize:
-            ratio = self.maxImageSize / max(image.size)
-            newSize = tuple(int(dim * ratio) for dim in image.size)
-            image = image.resize(newSize, Image.LANCZOS)
+        if max(image.size) > self.max_image_size:
+            ratio = self.max_image_size / max(image.size)
+            new_size = tuple(int(dim * ratio) for dim in image.size)
+            image = image.resize(new_size, Image.LANCZOS)
 
         if image.mode != 'RGB':
             image = image.convert('RGB')
             
         return image
 
-    async def optimiseImage(self, image : bytes) -> Image.Image :
+    async def optimise_image(self, image: bytes) -> Image.Image:
         loop = asyncio.get_event_loop()
-        image = await loop.run_in_executor(None, self.optimiseImageSync, image)
+        image = await loop.run_in_executor(None, self.optimise_image_sync, image)
         return image
         
-    async def detectFace(self, imageBytes : bytes) -> Optional[Tuple[torch.Tensor, float]]:
+    async def detect_face(self, image_bytes: bytes) -> Optional[Tuple[torch.Tensor, float]]:
+        image = await self.optimise_image(image=image_bytes)
 
-        image = await self.optimiseImage(image=imageBytes)
+        try:
+            face_tensor, prob = self.detector(image, return_prob=True)
 
-        try :
-            faceTensor, prob = self.detector(image, return_prob=True)
-
-        except Exception as e :
+        except Exception as e:
             raise InternalServer(f"Something went wrong, try again later")
         
-        if faceTensor is None:
+        if face_tensor is None:
             raise FaceNotDetected
         
         if prob < self.threshold:
             raise LowSimilarityScore
         
-        return faceTensor, prob
+        return face_tensor, prob

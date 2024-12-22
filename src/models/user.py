@@ -2,10 +2,10 @@ import datetime
 from pydantic import BaseModel
 
 class UserReq(BaseModel):
-    name : str
-    birthdate : datetime.date
-    reqId : str
+    name: str
+    birthdate: datetime.date
+    req_id: str
 
 class UserRes(BaseModel):
-    message : str
-    userId : str
+    message: str
+    user_id: str

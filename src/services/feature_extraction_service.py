@@ -10,16 +10,16 @@ class FeatureExtractionService:
         self.triton_client = triton_client.InferenceServerClient(url=triton_url)
         self.model_name = model_name
 
-    async def extractFeatures(self, faceTensors: torch.Tensor) -> np.ndarray:
-        if faceTensors is None or faceTensors.size(0) == 0:
+    async def extract_features(self, face_tensors: torch.Tensor) -> np.ndarray:
+        if face_tensors is None or face_tensors.size(0) == 0:
             raise BadRequest(message="Invalid face tensors for feature extraction")
         
         try:
-            if len(faceTensors.shape) == 3:
-                faceTensors = faceTensors.unsqueeze(0)
+            if len(face_tensors.shape) == 3:
+                face_tensors = face_tensors.unsqueeze(0)
             
-            inputs = [triton_client.InferInput("input0", faceTensors.numpy().shape, "FP32")]
-            inputs[0].set_data_from_numpy(faceTensors.numpy())
+            inputs = [triton_client.InferInput("input0", face_tensors.numpy().shape, "FP32")]
+            inputs[0].set_data_from_numpy(face_tensors.numpy())
             outputs = [triton_client.InferRequestedOutput("output0")]
             response = self.triton_client.infer(self.model_name, inputs, outputs=outputs)
             embeddings = response.as_numpy("output0")
