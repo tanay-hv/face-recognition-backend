@@ -3,7 +3,7 @@ from PIL import Image
 import io
 import pytest
 from facenet_pytorch import MTCNN
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 import torch
 from exception.exceptions import FaceNotDetected
 
@@ -42,7 +42,7 @@ async def test_optimise_image(face_detection_service, generate_large_image):
     assert max(image.size) == face_detection_service.max_image_size
 
 @pytest.mark.asyncio
-@patch.object(MTCNN, '__call__', new_callable=AsyncMock)
+@patch.object(MTCNN, '__call__', new_callable=MagicMock)
 async def test_detect_face_success(mock_mtcnn, face_detection_service, generate_mock_image):
     print(f"{mock_mtcnn} ffffffffffffffffffffffffffffff")
     mock_mtcnn.return_value = (torch.rand(1, 2, 160, 160), 0.99)
@@ -51,7 +51,7 @@ async def test_detect_face_success(mock_mtcnn, face_detection_service, generate_
     assert prob >= face_detection_service.threshold
 
 @pytest.mark.asyncio
-@patch.object(MTCNN, '__call__', new_callable=AsyncMock)
+@patch.object(MTCNN, '__call__', new_callable=MagicMock)
 async def test_detect_face_no_face(mock_mtcnn, face_detection_service, generate_mock_image):
     mock_mtcnn.return_value = (None, 0)
     with pytest.raises(FaceNotDetected):
